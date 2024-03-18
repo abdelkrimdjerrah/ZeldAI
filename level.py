@@ -3,6 +3,7 @@ from settings import *
 from tile import Tile
 from player import Player
 from debug import debug
+from grass import Grass
 
 class Level:
 	def __init__(self):
@@ -18,17 +19,29 @@ class Level:
 		self.create_map()
 
 	def create_map(self):
-		for row_index,row in enumerate(WORLD_MAP):
+
+		# Now that the player sprite is created, create grass sprites
+		for row_index, row in enumerate(WORLD_MAP):
 			for col_index, col in enumerate(row):
 				x = col_index * TILESIZE
 				y = row_index * TILESIZE
 				if col == 'x':
-					Tile((x,y),[self.visible_sprites,self.obstacle_sprites])
+					Tile((x, y), [self.visible_sprites, self.obstacle_sprites])
+				else: 
+					Grass((x, y), [self.visible_sprites])
+
+		for row_index, row in enumerate(WORLD_MAP):
+			for col_index, col in enumerate(row):
+				x = col_index * TILESIZE
+				y = row_index * TILESIZE
 				if col == 'p':
-					self.player = Player((x,y),[self.visible_sprites],self.obstacle_sprites)
+					self.player = Player((x, y), [self.visible_sprites], self.obstacle_sprites)
+
+					
+					
 
 	def run(self):
 		# update and draw the game
-		self.visible_sprites.draw(self.display_surface)
 		self.visible_sprites.update()
+		self.visible_sprites.draw(self.display_surface)
 		debug(self.player.direction)
