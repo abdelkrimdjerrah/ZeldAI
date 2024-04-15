@@ -1,8 +1,9 @@
 # game setup
 WIDTH    = 1280	
-HEIGTH   = 720
+HEIGHT   = 720
 FPS      = 60
 TILESIZE = 64
+DEZOOM_FACTOR = 0.5
 
 WORLD_MAP = [
 ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'],
