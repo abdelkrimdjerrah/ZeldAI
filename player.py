@@ -36,6 +36,8 @@ class Player(pygame.sprite.Sprite):
         self.velocity_y = 0
         self.rotation_speed = 0.01
         self.direction = pygame.math.Vector2(0, 0)
+        self.kills = 0
+        self.alive = True
 
 
 
@@ -114,6 +116,9 @@ class Player(pygame.sprite.Sprite):
             # pygame.draw.line(self.screen, DARKGREY, self.pos, end_pos, 2)
             
             for enemy in self.enemy_group:
+                if not enemy.alive:
+                    continue
+
                 direction_to_enemy = pygame.math.Vector2(enemy.pos - self.pos)
                 
                 if direction_to_enemy.length() == 0:
@@ -142,9 +147,16 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.base_player_image, -self.angle)
         self.rect = self.image.get_rect(center=self.hitbox_rect.center)
 
-            
+    def update_kills(self):
+        bullets = [bullet for bullet in self.bullet_group if bullet.kills > 0]
+        self.kills = sum(bullet.kills for bullet in bullets)
+
 
     def update(self):
+
+        if not self.alive:
+            return
+        
         self.move()
         self.move_randomly()
         self.random_rotation()
@@ -152,3 +164,9 @@ class Player(pygame.sprite.Sprite):
 
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
+
+        # Update the player's kills attribute based on the bullets
+        self.update_kills()
+        # Print the updated kills value
+        # if(self.kills > 0):
+            # print(f"Player kills: {self.kills}")

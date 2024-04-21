@@ -19,6 +19,8 @@ class Bullet(pygame.sprite.Sprite):
         self.bullet_lifetime = BULLET_LIFETIME
         self.spawn_time = pygame.time.get_ticks()  # gets the specific time that the bullet was created
         self.enemy_group = enemy_group  # Group of enemies
+        self.kills = 0
+
 
     def bullet_movement(self):  
         self.x += self.x_vel
@@ -32,6 +34,9 @@ class Bullet(pygame.sprite.Sprite):
 
     def update(self):
         self.bullet_movement()
-        hit_enemies = pygame.sprite.spritecollide(self, self.enemy_group, True)
+        hit_enemies = pygame.sprite.spritecollide(self, self.enemy_group, False)
         if hit_enemies:
-            self.kill()
+            for enemy in hit_enemies:
+                if enemy.alive: 
+                    enemy.alive = False
+                    self.kills += 1

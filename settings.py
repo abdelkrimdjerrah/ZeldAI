@@ -36,5 +36,7 @@ BULLET_SCALE = 1.4
 BULLET_SPEED = 50
 BULLET_LIFETIME = 750
 
+MAX_TEAM_SIZE = 10  # Maximum number of players for each team
+
 
 TILE_SIZE = 50
