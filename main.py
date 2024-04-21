@@ -71,26 +71,9 @@ while True:
     if check_game_end() and round == 1:
 
         # restart_game()
-        max_kills_A = 0
-        max_kills_B = 0
-        mvp_A = None
-        mvp_B = None
-        print(len(team_B))
-        print(len(team_A))
-        if len(team_A) == 0:
-            print("Team B wins!")
-            mvp_player = max(team_B, key=lambda player: player.kills)
-            print(mvp_player.kills)
-        else:
-            print("Team A wins!")
-            mvp_player = max(team_A, key=lambda player: player.kills)
-            print(mvp_player.kills)
-
-        for player in team_A:
-            print(f"Player {player} from team A has {player.kills} kills and is alive: {player.alive}")
-        for player in team_B:
-            print(f"Player {player} from team B has {player.kills} kills and is alive: {player.alive}")
-
+        print("Game Over")
+        winning_team = 'A' if any(player.alive for player in team_A) else 'B'
+        print(f"Team {winning_team} won!")
         round += 1
 
 

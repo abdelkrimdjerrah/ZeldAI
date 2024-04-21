@@ -9,20 +9,20 @@ class Player(pygame.sprite.Sprite):
     def __init__(self,screen, all_sprites_group, bullet_group, enemy_group, team):
         super().__init__()
         self.team = team
+        self.pos = pygame.math.Vector2(random.randrange(WIDTH), random.randrange(HEIGHT))
         # Load image based on team
         if self.team == 'A':
             self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_A.png").convert_alpha(), 0, PLAYER_SIZE)
               # Team A starts from the left side
-            self.pos = pygame.math.Vector2(random.randrange(WIDTH//2), random.randrange(HEIGHT))
+            # self.pos = pygame.math.Vector2(random.randrange(WIDTH//2), random.randrange(HEIGHT))
         elif self.team == 'B':
             self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_B.png").convert_alpha(), 0, PLAYER_SIZE)
             # Team B starts from the right side
-            self.pos = pygame.math.Vector2(random.randrange(WIDTH//2, WIDTH), random.randrange(HEIGHT))
+            # self.pos = pygame.math.Vector2(random.randrange(WIDTH//2, WIDTH), random.randrange(HEIGHT))
         else:
             # Default to player_A.png if team is not recognized
             self.team = 'A'
             self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_A.png").convert_alpha(), 0, PLAYER_SIZE)
-            self.pos = pygame.math.Vector2(random.randrange(WIDTH), random.randrange(HEIGHT))
         
         self.base_player_image = self.image
         self.hitbox_rect = self.base_player_image.get_rect(center = self.pos)
