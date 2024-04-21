@@ -1,3 +1,4 @@
+import random
 from bullet import Bullet
 import pygame
 from sys import exit
@@ -5,10 +6,20 @@ import math
 from settings import *
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self,screen, all_sprites_group, bullet_group, enemy_group):
+    def __init__(self,screen, all_sprites_group, bullet_group, enemy_group, team):
         super().__init__()
         self.pos = pygame.math.Vector2(PLAYER_START_X, PLAYER_START_Y)
-        self.image = pygame.transform.rotozoom(pygame.image.load("assets/0.png").convert_alpha(), 0, PLAYER_SIZE)
+        self.team = team
+        # Load image based on team
+        if self.team == 'A':
+            self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_A.png").convert_alpha(), 0, PLAYER_SIZE)
+        elif self.team == 'B':
+            self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_B.png").convert_alpha(), 0, PLAYER_SIZE)
+        else:
+            # Default to player_A.png if team is not recognized
+            self.team = 'A'
+            self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_A.png").convert_alpha(), 0, PLAYER_SIZE)
+        
         self.base_player_image = self.image
         self.hitbox_rect = self.base_player_image.get_rect(center = self.pos)
         self.rect = self.hitbox_rect.copy()
@@ -23,42 +34,10 @@ class Player(pygame.sprite.Sprite):
         self.enemy_group = enemy_group
         self.velocity_x = 0
         self.velocity_y = 0
+        self.rotation_speed = 0.01
         self.direction = pygame.math.Vector2(0, 0)
 
 
-    def player_rotation(self):
-        self.mouse_coords = pygame.mouse.get_pos()
-        self.x_change_mouse_player = (self.mouse_coords[0] - self.hitbox_rect.centerx)
-        self.y_change_mouse_player = (self.mouse_coords[1] - self.hitbox_rect.centery)
-        self.angle = math.degrees(math.atan2(self.y_change_mouse_player, self.x_change_mouse_player))
-        self.image = pygame.transform.rotate(self.base_player_image, -self.angle)
-        self.rect = self.image.get_rect(center = self.hitbox_rect.center)
-       
-
-    def user_input(self):
-        self.velocity_x = 0
-        self.velocity_y = 0
-
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_w]:
-            self.velocity_y = -self.speed
-        if keys[pygame.K_s]:
-            self.velocity_y = self.speed
-        if keys[pygame.K_d]:
-            self.velocity_x = self.speed
-        if keys[pygame.K_a]:
-            self.velocity_x = -self.speed
-
-        if self.velocity_x != 0 and self.velocity_y != 0: # moving diagonally
-            self.velocity_x /= math.sqrt(2)
-            self.velocity_y /= math.sqrt(2)
-
-        if pygame.mouse.get_pressed() == (1, 0, 0) or keys[pygame.K_SPACE]:
-            self.shoot = True
-            self.is_shooting()
-        else:
-            self.shoot = False
 
     def is_shooting(self): 
         if self.shoot_cooldown == 0:
@@ -68,15 +47,45 @@ class Player(pygame.sprite.Sprite):
             self.bullet_group.add(self.bullet)
             self.all_sprites_group.add(self.bullet)
             
-
-    def move(self):
-        # Store previous position for collision resolution
+    def move_randomly(self):
+        self.rect.center = self.pos
         prev_pos = self.pos.copy()
 
-        # Move player
+        # keep a copy of the current position
+
+        # Randomly choose a target direction
+        target_direction = pygame.math.Vector2(random.choice([-1, 0, 1]), random.choice([-1, 0, 1]))
+
+        # Apply gradual change in velocity towards the target direction
+        acceleration = 0.1  # Adjust acceleration factor to control the speed of direction change
+        self.direction += (target_direction - self.direction) * acceleration
+
+        # Normalize the direction vector to maintain constant speed
+        if self.direction.length() > 0:
+            self.direction.normalize_ip()
+
+        # Move the player in the current direction
+        self.pos += self.direction * self.speed
+
+        ## Check collision with borders
+        if self.pos.x < 0:
+            self.pos.x = 0
+            self.direction.x = 1
+        if self.pos.x > WIDTH:
+            self.pos.x = WIDTH
+            self.direction.x = -1
+        if self.pos.y < 0:
+            self.pos.y = 0
+            self.direction.y = 1
+        if self.pos.y > HEIGHT:
+            self.pos.y = HEIGHT
+            self.direction.y = -1
+
+    def move(self):
+        prev_pos = self.pos.copy()
+
         self.pos += pygame.math.Vector2(self.velocity_x, self.velocity_y)
 
-        # Update hitbox position
         self.hitbox_rect.center = self.pos
 
         if self.pos.x < 0:
@@ -93,9 +102,6 @@ class Player(pygame.sprite.Sprite):
             self.direction.y = -1
         
 
-        # # Update rect position based on the hitbox position
-        # self.rect.center = self.hitbox_rect.center
-
 
 
     def ray_casting(self):
@@ -107,33 +113,41 @@ class Player(pygame.sprite.Sprite):
             end_pos = (x, y) = (ox + MAX_DEPTH * cos_a, oy + MAX_DEPTH * sin_a)
             # pygame.draw.line(self.screen, DARKGREY, self.pos, end_pos, 2)
             
-            # Check for collision with enemies within FOV
             for enemy in self.enemy_group:
-                # Calculate the direction vector from the player to the enemy
-                direction_to_enemy = pygame.math.Vector2(enemy.pos - self.pos).normalize()
+                direction_to_enemy = pygame.math.Vector2(enemy.pos - self.pos)
                 
-                # Calculate the angle between the player's direction and the direction to the enemy
+                if direction_to_enemy.length() == 0:
+                    continue
+                    
+                direction_to_enemy.normalize_ip()
+                
                 angle_to_enemy = math.degrees(math.acos(direction_to_enemy.dot(pygame.math.Vector2(cos_a, sin_a))))
                 
-                # Check if the enemy is within the player's FOV
                 if angle_to_enemy <= HALF_FOV:
-                    # If the enemy is within the FOV, point the player towards the enemy
                     self.angle = math.degrees(math.atan2(enemy.pos[1] - self.pos[1], enemy.pos[0] - self.pos[0]))
                     enemy_detected = True
-                    break # Exit the loop after detecting one enemy
+                    break 
             
             if enemy_detected:
-                self.is_shooting()  # Shoot when an enemy is detected
-                break  # Exit the loop if an enemy is detected
+                self.is_shooting() 
+                break  
             cur_angle += DELTA_ANGLE
 
+
+
+    def random_rotation(self):
+        random_angle = random.uniform(-180, 180)
+        self.angle += (random_angle - self.angle) * self.rotation_speed
+        self.angle %= 360
+        self.image = pygame.transform.rotate(self.base_player_image, -self.angle)
+        self.rect = self.image.get_rect(center=self.hitbox_rect.center)
 
             
 
     def update(self):
-        self.user_input()
         self.move()
-        self.player_rotation()
+        self.move_randomly()
+        self.random_rotation()
         self.ray_casting()
 
         if self.shoot_cooldown > 0:
