@@ -8,24 +8,28 @@ from settings import *
 class Player(pygame.sprite.Sprite):
     def __init__(self,screen, all_sprites_group, bullet_group, enemy_group, team):
         super().__init__()
-        self.pos = pygame.math.Vector2(PLAYER_START_X, PLAYER_START_Y)
         self.team = team
         # Load image based on team
         if self.team == 'A':
             self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_A.png").convert_alpha(), 0, PLAYER_SIZE)
+              # Team A starts from the left side
+            self.pos = pygame.math.Vector2(random.randrange(WIDTH//2), random.randrange(HEIGHT))
         elif self.team == 'B':
             self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_B.png").convert_alpha(), 0, PLAYER_SIZE)
+            # Team B starts from the right side
+            self.pos = pygame.math.Vector2(random.randrange(WIDTH//2, WIDTH), random.randrange(HEIGHT))
         else:
             # Default to player_A.png if team is not recognized
             self.team = 'A'
             self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_A.png").convert_alpha(), 0, PLAYER_SIZE)
+            self.pos = pygame.math.Vector2(random.randrange(WIDTH), random.randrange(HEIGHT))
         
         self.base_player_image = self.image
         self.hitbox_rect = self.base_player_image.get_rect(center = self.pos)
         self.rect = self.hitbox_rect.copy()
         self.speed = PLAYER_SPEED
         self.shoot = False
-        self.angle = 0
+        self.angle = random.uniform(0, 360)
         self.shoot_cooldown = 0
         self.gun_barrel_offset = pygame.math.Vector2(GUN_OFFSET_X, GUN_OFFSET_Y)
         self.all_sprites_group = all_sprites_group
