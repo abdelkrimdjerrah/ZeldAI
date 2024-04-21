@@ -105,7 +105,7 @@ class Player(pygame.sprite.Sprite):
         for ray in range(NUM_RAYS):
             sin_a, cos_a = math.sin(cur_angle), math.cos(cur_angle)
             end_pos = (x, y) = (ox + MAX_DEPTH * cos_a, oy + MAX_DEPTH * sin_a)
-            pygame.draw.line(self.screen, DARKGREY, self.pos, end_pos, 2)
+            # pygame.draw.line(self.screen, DARKGREY, self.pos, end_pos, 2)
             
             # Check for collision with enemies within FOV
             for enemy in self.enemy_group:
@@ -123,9 +123,9 @@ class Player(pygame.sprite.Sprite):
                     break # Exit the loop after detecting one enemy
             
             if enemy_detected:
+                self.is_shooting()  # Shoot when an enemy is detected
                 break  # Exit the loop if an enemy is detected
             cur_angle += DELTA_ANGLE
-
 
 
             
