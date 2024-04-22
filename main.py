@@ -67,7 +67,6 @@ while True:
 
     screen.blit(background, (0, 0))
     
-    # Check if the game has ended and only one round is played
     if check_game_end() and round == 1:
 
         # restart_game()

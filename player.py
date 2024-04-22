@@ -4,6 +4,7 @@ import pygame
 from sys import exit
 import math
 from settings import *
+import numpy as np
 
 class Player(pygame.sprite.Sprite):
     def __init__(self,screen, all_sprites_group, bullet_group, enemy_group, team):
@@ -42,8 +43,12 @@ class Player(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2(0, 0)
         self.kills = 0
         self.alive = True
+        self.target_enemy = None
 
 
+
+
+ 
 
     def is_shooting(self): 
         if self.shoot_cooldown == 0:
@@ -53,27 +58,25 @@ class Player(pygame.sprite.Sprite):
             self.bullet_group.add(self.bullet)
             self.all_sprites_group.add(self.bullet)
             
+    def move_towards_target(self):
+        if self.target_enemy is not None and self.target_enemy.alive:
+            target_direction = self.target_enemy.pos - self.pos
+            target_direction.normalize_ip()  
+            acceleration = 0.15  
+            self.direction += (target_direction - self.direction) * acceleration
+            if self.direction.length() > 0:
+                self.direction.normalize_ip()
+            self.pos += self.direction * self.speed
+
     def move_randomly(self):
         self.rect.center = self.pos
         prev_pos = self.pos.copy()
-
-        # keep a copy of the current position
-
-        # Randomly choose a target direction
         target_direction = pygame.math.Vector2(random.choice([-1, 0, 1]), random.choice([-1, 0, 1]))
-
-        # Apply gradual change in velocity towards the target direction
-        acceleration = 0.1  # Adjust acceleration factor to control the speed of direction change
+        acceleration = 0.1  
         self.direction += (target_direction - self.direction) * acceleration
-
-        # Normalize the direction vector to maintain constant speed
         if self.direction.length() > 0:
             self.direction.normalize_ip()
-
-        # Move the player in the current direction
         self.pos += self.direction * self.speed
-
-        ## Check collision with borders
         if self.pos.x < 0:
             self.pos.x = 0
             self.direction.x = 1
@@ -89,11 +92,8 @@ class Player(pygame.sprite.Sprite):
 
     def move(self):
         prev_pos = self.pos.copy()
-
         self.pos += pygame.math.Vector2(self.velocity_x, self.velocity_y)
-
         self.hitbox_rect.center = self.pos
-
         if self.pos.x < 0:
             self.pos.x = 0
             self.direction.x = 1
@@ -112,35 +112,41 @@ class Player(pygame.sprite.Sprite):
 
     def ray_casting(self):
         ox, oy = self.pos
-        cur_angle = math.radians(self.angle - HALF_FOV) # Convert player angle to radians
+        cur_angle = math.radians(self.angle - HALF_FOV)  
         enemy_detected = False
         for ray in range(NUM_RAYS):
             sin_a, cos_a = math.sin(cur_angle), math.cos(cur_angle)
             end_pos = (x, y) = (ox + MAX_DEPTH * cos_a, oy + MAX_DEPTH * sin_a)
-            # pygame.draw.line(self.screen, DARKGREY, self.pos, end_pos, 2)
-            
+            # pygame.draw.line(self.screen, (255,255,255) , self.pos, end_pos, 2)
+
             for enemy in self.enemy_group:
                 if not enemy.alive:
                     continue
 
                 direction_to_enemy = pygame.math.Vector2(enemy.pos - self.pos)
-                
+
                 if direction_to_enemy.length() == 0:
                     continue
-                    
+
                 direction_to_enemy.normalize_ip()
-                
+
                 angle_to_enemy = math.degrees(math.acos(direction_to_enemy.dot(pygame.math.Vector2(cos_a, sin_a))))
-                
+
                 if angle_to_enemy <= HALF_FOV:
-                    self.angle = math.degrees(math.atan2(enemy.pos[1] - self.pos[1], enemy.pos[0] - self.pos[0]))
+                    target_angle = math.degrees(math.atan2(enemy.pos[1] - self.pos[1], enemy.pos[0] - self.pos[0]))
+                    angle_difference = target_angle - self.angle
+                    self.angle += min(abs(angle_difference), 1) * np.sign(angle_difference)
+                    self.angle %= 360 
                     enemy_detected = True
-                    break 
-            
+                    break
+
             if enemy_detected:
-                self.is_shooting() 
-                break  
+                self.target_enemy = enemy
+                self.is_shooting()
+                break
+
             cur_angle += DELTA_ANGLE
+
 
 
 
@@ -159,17 +165,18 @@ class Player(pygame.sprite.Sprite):
     def update(self):
 
         if not self.alive:
+
+            self.image = pygame.Surface((self.image.get_width(), self.image.get_height()), pygame.SRCALPHA)
             return
         
         self.move()
         self.move_randomly()
         self.random_rotation()
         self.ray_casting()
-
+        self.move_towards_target()
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
-        # Update the player's kills attribute based on the bullets
         self.update_kills()
         # Print the updated kills value
         # if(self.kills > 0):
