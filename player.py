@@ -170,7 +170,7 @@ class Player(pygame.sprite.Sprite):
             return
         
         self.move()
-        self.move_randomly()
+        # self.move_randomly()
         self.random_rotation()
         self.ray_casting()
         self.move_towards_target()
