@@ -3,6 +3,7 @@ from bullet import Bullet
 import pygame
 from sys import exit
 import math
+from perceptron import Perceptron
 from settings import *
 import numpy as np
 
@@ -44,11 +45,49 @@ class Player(pygame.sprite.Sprite):
         self.kills = 0
         self.alive = True
         self.target_enemy = None
-
+        self.perceptron = Perceptron(learning_rate=0.1, num_inputs=2) 
 
 
 
  
+    def get_perceptron_inputs(self):
+        distance_to_enemy = self.get_nearest_enemy_distance()
+        enemies_in_sight = self.count_enemies_in_fov()
+
+        # Normalize inputs
+        normalized_distance = distance_to_enemy / MAX_DEPTH  # Assuming MAX_DEPTH is the maximum possible distance
+        normalized_enemies = enemies_in_sight / MAX_TEAM_PLAYERS  # Assuming MAX_ENEMIES is the maximum number of enemies in FOV
+
+        return [normalized_distance, normalized_enemies]
+
+    def get_nearest_enemy_distance(self):
+        if self.target_enemy is not None:
+            return self.target_enemy.pos.distance_to(self.pos)
+        return MAX_DEPTH
+    
+    def count_enemies_in_fov(self):
+        count = 0
+        for enemy in self.enemy_group:
+            if not enemy.alive:
+                continue
+
+            direction_to_enemy = pygame.math.Vector2(enemy.pos - self.pos)
+
+            if direction_to_enemy.length() == 0:
+                continue
+
+            direction_to_enemy.normalize_ip()
+
+            dot_product_result = direction_to_enemy.dot(pygame.math.Vector2(math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))))
+            # Clamp dot product result within [-1, 1]
+            dot_product_result = max(-1, min(1, dot_product_result))
+            angle_to_enemy = math.degrees(math.acos(dot_product_result))
+            if angle_to_enemy <= FOV:
+                count += 1
+
+        return count
+    
+
 
     def is_shooting(self): 
         if self.shoot_cooldown == 0:
@@ -106,9 +145,6 @@ class Player(pygame.sprite.Sprite):
         if self.pos.y > HEIGHT:
             self.pos.y = HEIGHT
             self.direction.y = -1
-        
-
-
 
     def ray_casting(self):
         ox, oy = self.pos
@@ -142,7 +178,7 @@ class Player(pygame.sprite.Sprite):
 
             if enemy_detected:
                 self.target_enemy = enemy
-                self.is_shooting()
+                # self.is_shooting()
                 break
 
             cur_angle += DELTA_ANGLE
@@ -163,21 +199,36 @@ class Player(pygame.sprite.Sprite):
 
 
     def update(self):
-
         if not self.alive:
-
             self.image = pygame.Surface((self.image.get_width(), self.image.get_height()), pygame.SRCALPHA)
             return
-        
+
         self.move()
-        # self.move_randomly()
         self.random_rotation()
         self.ray_casting()
-        self.move_towards_target()
+
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
         self.update_kills()
-        # Print the updated kills value
-        # if(self.kills > 0):
-            # print(f"Player kills: {self.kills}")
+
+        inputs = self.get_perceptron_inputs()
+        action = self.perceptron.get_action(inputs)
+
+        if action == "shoot":
+            target = 1
+            self.move_towards_target()
+            self.is_shooting()
+        elif action == "follow":
+            target = 0.5
+            self.move_towards_target()
+        else:
+            target = 0
+            self.move_randomly()
+
+        error = self.perceptron.train(inputs, target)
+
+    
+            
+
+    
