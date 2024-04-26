@@ -16,11 +16,11 @@ class Player(pygame.sprite.Sprite):
         if self.team == 'A':
             self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_A.png").convert_alpha(), 0, PLAYER_SIZE)
               # Team A starts from the left side
-            # self.pos = pygame.math.Vector2(random.randrange(WIDTH//2), random.randrange(HEIGHT))
+            self.pos = pygame.math.Vector2(random.randrange(WIDTH//2), random.randrange(HEIGHT))
         elif self.team == 'B':
             self.image = pygame.transform.rotozoom(pygame.image.load("assets/player_B.png").convert_alpha(), 0, PLAYER_SIZE)
             # Team B starts from the right side
-            # self.pos = pygame.math.Vector2(random.randrange(WIDTH//2, WIDTH), random.randrange(HEIGHT))
+            self.pos = pygame.math.Vector2(random.randrange(WIDTH//2, WIDTH), random.randrange(HEIGHT))
         else:
             # Default to player_A.png if team is not recognized
             self.team = 'A'
@@ -54,11 +54,8 @@ class Player(pygame.sprite.Sprite):
         distance_to_enemy = self.get_nearest_enemy_distance()
         enemies_in_sight = self.count_enemies_in_fov()
 
-        # Normalize inputs
-        normalized_distance = distance_to_enemy / MAX_DEPTH  # Assuming MAX_DEPTH is the maximum possible distance
-        normalized_enemies = enemies_in_sight / MAX_TEAM_PLAYERS  # Assuming MAX_ENEMIES is the maximum number of enemies in FOV
-
-        return [normalized_distance, normalized_enemies]
+        # Normalize inputs to be within [0, 1]
+        return [distance_to_enemy / MAX_DEPTH , enemies_in_sight / MAX_TEAM_PLAYERS ]
 
     def get_nearest_enemy_distance(self):
         if self.target_enemy is not None:
@@ -109,7 +106,6 @@ class Player(pygame.sprite.Sprite):
 
     def move_randomly(self):
         self.rect.center = self.pos
-        prev_pos = self.pos.copy()
         target_direction = pygame.math.Vector2(random.choice([-1, 0, 1]), random.choice([-1, 0, 1]))
         acceleration = 0.1  
         self.direction += (target_direction - self.direction) * acceleration
@@ -130,7 +126,6 @@ class Player(pygame.sprite.Sprite):
             self.direction.y = -1
 
     def move(self):
-        prev_pos = self.pos.copy()
         self.pos += pygame.math.Vector2(self.velocity_x, self.velocity_y)
         self.hitbox_rect.center = self.pos
         if self.pos.x < 0:
