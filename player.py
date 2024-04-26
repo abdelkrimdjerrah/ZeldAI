@@ -132,7 +132,7 @@ class Player(pygame.sprite.Sprite):
 
                 angle_to_enemy = math.degrees(math.acos(direction_to_enemy.dot(pygame.math.Vector2(cos_a, sin_a))))
 
-                if angle_to_enemy <= HALF_FOV:
+                if angle_to_enemy <= FOV:
                     target_angle = math.degrees(math.atan2(enemy.pos[1] - self.pos[1], enemy.pos[0] - self.pos[0]))
                     angle_difference = target_angle - self.angle
                     self.angle += min(abs(angle_difference), 1) * np.sign(angle_difference)
