@@ -4,7 +4,7 @@ import math
 from settings import *
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, angle, enemy_group):
+    def __init__(self, x, y, angle, enemy_group, player):
         super().__init__()
         self.image = pygame.image.load("assets/1.png").convert_alpha()
         self.image = pygame.transform.rotozoom(self.image, 0, BULLET_SCALE)
@@ -20,6 +20,7 @@ class Bullet(pygame.sprite.Sprite):
         self.spawn_time = pygame.time.get_ticks()  # gets the specific time that the bullet was created
         self.enemy_group = enemy_group  # Group of enemies
         self.kills = 0
+        self.player = player
 
 
     def bullet_movement(self):  
@@ -40,3 +41,4 @@ class Bullet(pygame.sprite.Sprite):
                 if enemy.alive: 
                     enemy.alive = False
                     self.kills += 1
+                    self.player.kills += 1

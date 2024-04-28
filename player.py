@@ -90,7 +90,7 @@ class Player(pygame.sprite.Sprite):
         if self.shoot_cooldown == 0:
             self.shoot_cooldown = SHOOT_COOLDOWN
             spawn_bullet_pos = self.pos + self.gun_barrel_offset.rotate(self.angle)
-            self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, self.enemy_group)
+            self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, self.enemy_group, self)
             self.bullet_group.add(self.bullet)
             self.all_sprites_group.add(self.bullet)
             
@@ -188,9 +188,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.base_player_image, -self.angle)
         self.rect = self.image.get_rect(center=self.hitbox_rect.center)
 
-    def update_kills(self):
-        bullets = [bullet for bullet in self.bullet_group if bullet.kills > 0]
-        self.kills = sum(bullet.kills for bullet in bullets)
+  
 
 
     def update(self):
@@ -205,7 +203,6 @@ class Player(pygame.sprite.Sprite):
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
-        self.update_kills()
 
         inputs = self.get_perceptron_inputs()
         action = self.perceptron.get_action(inputs)

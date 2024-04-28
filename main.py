@@ -45,15 +45,23 @@ def restart_game():
     # Respawn all players
     for player in team_A:
         if(player.alive == False):
+            player.kill()
+            new_player = Player(screen, all_sprites_group, bullet_group, team_B, 'A')
+            all_sprites_group.add(new_player)
+            team_A.add(new_player)
+            player = new_player
+            player.alive = True
             player.pos = pygame.math.Vector2(random.randrange(WIDTH//2), random.randrange(HEIGHT))
-            player.alive = True
+    
     for player in team_B:
-        # random position
         if(player.alive == False):
-            player.pos = pygame.math.Vector2(random.randrange(WIDTH//2, WIDTH), random.randrange(HEIGHT))
+            player.kill()
+            new_player = Player(screen, all_sprites_group, bullet_group, team_A, 'B')
+            all_sprites_group.add(new_player)
+            team_B.add(new_player)
+            player = new_player
             player.alive = True
-
-
+            player.pos = pygame.math.Vector2(random.randrange(WIDTH//2, WIDTH), random.randrange(HEIGHT))
 
 round = 1
 while True:
@@ -67,7 +75,12 @@ while True:
     
     # if check_game_end() and round == 1:
     if check_game_end():
-
+        players_sprites = [sprite for sprite in all_sprites_group.sprites() if isinstance(sprite, Player)]
+        mvp = max(players_sprites, key=lambda x: x.kills)
+        #print kills for each player
+        for player in players_sprites:
+            print(f"Player {player.team} killed {player.kills} players")
+            
         restart_game()
         print("Game Over")
         winning_team = 'A' if any(player.alive for player in team_A) else 'B'
