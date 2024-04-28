@@ -26,7 +26,7 @@ class Perceptron:
     
     def get_action(self, inputs):
         prediction = self.predict(inputs)
-        # print(prediction)
+        print(prediction)
         
         if prediction >= 0.6:
             return "shoot"
