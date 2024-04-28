@@ -6,11 +6,17 @@ import math
 from perceptron import Perceptron
 from settings import *
 import numpy as np
+from faker import Faker
+
+
+fake = Faker()
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self,screen, all_sprites_group, bullet_group, enemy_group, team):
         super().__init__()
         self.team = team
+        self.name = fake.name()
         self.pos = pygame.math.Vector2(random.randrange(WIDTH), random.randrange(HEIGHT))
         # Load image based on team
         if self.team == 'A':

@@ -73,18 +73,27 @@ while True:
 
     screen.blit(background, (0, 0))
     
-    # if check_game_end() and round == 1:
     if check_game_end():
-        players_sprites = [sprite for sprite in all_sprites_group.sprites() if isinstance(sprite, Player)]
-        mvp = max(players_sprites, key=lambda x: x.kills)
-        #print kills for each player
-        for player in players_sprites:
-            print(f"Player {player.team} killed {player.kills} players")
-            
+        
         restart_game()
+        print("____________________________")
         print("Game Over")
+        print("____________________________")
         winning_team = 'A' if any(player.alive for player in team_A) else 'B'
         print(f"Team {winning_team} won!")
+        print("____________________________")
+        players_sprites = [sprite for sprite in all_sprites_group.sprites() if isinstance(sprite, Player)]
+        mvp = max(players_sprites, key=lambda x: x.kills)
+        for player in players_sprites:
+            print(f"Player {player.name} of team {player.team} killed {player.kills} players")
+
+        print("____________________________")
+        print(f"Player {mvp.name} is the MVP with {mvp.kills} kills")
+        print("____________________________")
+
+        for player in players_sprites:
+            player.kills = 0
+
         round += 1
 
 
