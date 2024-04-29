@@ -40,5 +40,7 @@ class Bullet(pygame.sprite.Sprite):
             for enemy in hit_enemies:
                 if enemy.alive: 
                     enemy.alive = False
+                    enemy.score -= DEATH_PENALTY
                     self.kills += 1
                     self.player.kills += 1
+                    self.player.score += KILL_REWARD

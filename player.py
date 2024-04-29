@@ -49,6 +49,7 @@ class Player(pygame.sprite.Sprite):
         self.rotation_speed = 0.01
         self.direction = pygame.math.Vector2(0, 0)
         self.kills = 0
+        self.score = 0
         self.alive = True
         self.target_enemy = None
         self.perceptron = Perceptron(learning_rate=0.1, num_inputs=2) 
@@ -197,10 +198,12 @@ class Player(pygame.sprite.Sprite):
   
 
 
+
     def update(self):
         if not self.alive:
             self.image = pygame.Surface((self.image.get_width(), self.image.get_height()), pygame.SRCALPHA)
             return
+
 
         self.move()
         self.random_rotation()

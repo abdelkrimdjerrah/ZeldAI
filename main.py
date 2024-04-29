@@ -85,7 +85,7 @@ while True:
         players_sprites = [sprite for sprite in all_sprites_group.sprites() if isinstance(sprite, Player)]
         mvp = max(players_sprites, key=lambda x: x.kills)
         for player in players_sprites:
-            print(f"Player {player.name} of team {player.team} killed {player.kills} players")
+            print(f"Player {player.name} of team {player.team} killed {player.kills} players with score of {player.score}")
 
         print("____________________________")
         print(f"Player {mvp.name} is the MVP with {mvp.kills} kills")
