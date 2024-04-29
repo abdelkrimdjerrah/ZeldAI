@@ -41,6 +41,15 @@ def check_game_end():
     team_B_alive = any(player.alive for player in team_B) 
     return not (team_A_alive and team_B_alive) 
 
+def genetic_selection(players):
+    total_score = sum(player.score for player in players)
+    for player in players:
+        player.probability = player.score / total_score
+    
+    selected_player = random.choices(players, [player.probability for player in players])[0]
+    return selected_player
+
+
 def restart_game():
     # Respawn all players
     for player in team_A:
@@ -89,6 +98,9 @@ while True:
 
         print("____________________________")
         print(f"Player {mvp.name} is the MVP with {mvp.kills} kills")
+        print("____________________________")
+        selected_genetic_player = genetic_selection(players_sprites)
+        print(f"Genetic selection: Player {selected_genetic_player.name} of team {selected_genetic_player.team} is selected for genetic algorithm for round {round}")
         print("____________________________")
 
         for player in players_sprites:
