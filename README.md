@@ -10,3 +10,12 @@ Collision detection
 Scrollable map
 No raycast
 No RNN
+
+22/04/2024
+Absent
+
+29/04/2024
+RNN (single layer)
+Raycast
+Fitness Killing_enemies
+Selection roulette
